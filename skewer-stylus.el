@@ -119,9 +119,8 @@ non-blank line. If there are no further non-blank lines, return
             (skewer-stylus-escape-enclosing :backward ?\( ?\[ ) ) )
       (if (memql (char-after) '( ?\C-i ?  ))
           (progn
-            (let ((char-now (char-after)))
-              (re-search-forward (rx (+ (eval char-now)))
-                                 (line-end-position) t) )
+            (re-search-forward (concat (char-to-string (char-after)) "+" )
+                               (line-end-position) t)
             (- (match-end 0) (match-beginning 0)) )
         0 ) ) ) ) )
 
@@ -138,9 +137,9 @@ encountered first when scanning backwards from the current point."
 
   (save-excursion
     ;; locate limits of current declaration
-    (let ((entry-end (cadr (mapcar* #'funcall
-                                    '(goto-char identity)
-                                    (skewer-stylus-declaration-limits) )))
+    (let ((entry-end (cadr (cl-mapcar #'funcall
+                                      '(goto-char identity)
+                                      (skewer-stylus-declaration-limits) )))
           (target-indent (skewer-stylus-indent-level)) )
       
       (cl-labels
@@ -152,7 +151,8 @@ encountered first when scanning backwards from the current point."
               (goto-char (car (skewer-stylus-declaration-limits)))
               (body-inner) )
              ;; step into previous declaration
-             ((not (or (looking-back (skewer-stylus-regexp-or-block-start nil))
+             ((not (or (looking-back (skewer-stylus-regexp-or-block-start nil)
+                                     nil )
                        (ignore-error beginning-of-buffer
                          (backward-char)
                          t ) ))
@@ -161,9 +161,9 @@ encountered first when scanning backwards from the current point."
              ;; declaration was delimited by a {: eval to this {}
              ;; group, and surrounding spaces as appropriate
              ((char-equal (char-after) ?\{ )
-              (list (if (looking-back "\n[[:space:]]*")
+              (list (if (looking-back "\n[[:space:]]*" nil)
                         (save-excursion
-                          (while (looking-back "\n[[:space:]]*")
+                          (while (looking-back "\n[[:space:]]*" nil)
                             (goto-char (match-beginning 0)) )
                           (1+ (point)) )
                       (point) )
@@ -225,9 +225,10 @@ comment, string or paren, and their start points."
                     (goto-char start)
                     (if comment
                         (search-forward "*/")
-                      (let ((next-now (char-after)))
-                        (re-search-forward
-                         (rx (not ?\\) (eval next-now)) ) ) ) )))
+                      (re-search-forward
+                       (concat "[^\\]"
+                               (regexp-quote
+                                (char-to-string (char-after)) ) ) ) ) )))
          (unless (memql (point) (list start end))
            (goto-char (if forwards end start)) ) ) )
       ;; syntax-ppss says we're in a parens. it might not
@@ -243,11 +244,11 @@ comment, string or paren, and their start points."
                           ;; find the longest sublist that
                           ;; contains only the positions of
                           ;; regular parentheses
-                          (setq x (member-if #'is-paren x))
-                          (if (every #'is-paren x)
+                          (setq x (cl-member-if #'is-paren x))
+                          (if (cl-every #'is-paren x)
                               x
                             (slice
-                             (member-if-not #'is-paren x) ) ) ) )
+                             (cl-member-if-not #'is-paren x) ) ) ) )
          (let ((first-par (car-safe (slice open-list))))
            (when first-par
              (goto-char first-par)
@@ -299,7 +300,7 @@ some exceptions:
                    (cond
                     ((save-match-data
                        (string-match "\n$" (match-string-no-properties 0)) )
-                     (looking-back "\\\\\n") ) ;escaped newline, try again
+                     (looking-back "\\\\\n" nil) ) ;escaped newline, try again
                     ((save-match-data
                        (string-match ";$" (match-string-no-properties 0)) )
                      (save-match-data
@@ -353,7 +354,7 @@ the first character of the selector.
                         ;; non-nil if point moved: start over
                         (skewer-stylus-escape-enclosing :forward) )
                       (when (save-match-data
-                              (string-match (skewer-stylus-regexp-or-block-end)
+                              (string-match (skewer-stylus-regexp-or-block-end nil)
                                             (match-string 0) ) )
                         ;; block end pattern: stand at start...
                         (goto-char (match-beginning 0))
@@ -567,7 +568,7 @@ by one in the buffer, otherwise nil."
        (goto-char (cadr el))
        (when (char-equal (char-after) ?\{ )
          (forward-char)
-         (when (looking-back "\\(?:\n[[:space:]]*\\)?{" )
+         (when (looking-back "\\(?:\n[[:space:]]*\\)?{" nil)
            (buffer-substring-no-properties (match-beginning 0)
                                          (match-end 0) ) ) ) ) )
    selector-ranges ) )
