@@ -4,7 +4,7 @@
 
 ;; Author: Kristoffer Levin Hansen <kristoffer@levinhansen.dk>
 ;; Keywords: languages, tools
-;; Version: 1.0.0
+;; Version: "1.0.0"
 ;; URL: https://github.com/theunbound/skewer-stylus
 ;; Package-Requires: ((emacs "27.1") (skewer-mode "1.8.0"))
 
