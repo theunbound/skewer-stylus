@@ -1,4 +1,4 @@
-;;; skewer-stylus.el --- Skewer support for live interaction stylus
+;;; skewer-stylus.el --- Skewer support for live interaction with stylus -*- lexical-binding: t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -35,10 +35,7 @@
 ;; coding style of what you feed skewer-stylus, the more likely it is
 ;; to become confused. As always, there are no guarantees.
 
-;; See the license file, BTW...
-
-;; Main git repository, as of 13th november 2021:
-;; URL ‘https://github.com/theunbound/skewer-stylus’
+;; As the license file point out...
 
 ;;; Code:
 (require 'skewer-css)
