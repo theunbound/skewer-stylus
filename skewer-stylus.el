@@ -1,11 +1,12 @@
-;;; skewer-stylus.el --- skewer support for live interaction stylus
+;;; skewer-stylus.el --- Skewer support for live interaction stylus
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Kristoffer Levin Hansen <kristoffer@levinhansen.dk>
 ;; Keywords: languages, tools
 ;; Version: 1.0.0
-;; Package-Requires: ((skewer-mode "1.8.0"))
+;; URL: https://github.com/theunbound/skewer-stylus
+;; Package-Requires: ((emacs "27.1") (skewer-mode "1.8.0"))
 
 ;;; Commentary:
 
@@ -42,7 +43,7 @@
 ;;; Code:
 (require 'skewer-css)
 
-(define-error 'not-selector-error
+(define-error 'skewer-stylus-not-selector-error
   "Could not find extent of selector"
   'scan-error )
 
@@ -367,7 +368,7 @@ the first character of the selector.
                            (pcase (skewer-stylus-indent-level)
                              ((pred (> target-indent))
                               ;; can't have been a valid selector, then
-                              (signal 'not-selector-error (list (point))) )
+                              (signal 'skewer-stylus-not-selector-error (list (point))) )
                              ((pred (= target-indent))
                               ;; if the rule after the selector begins
                               ;; with a {, stop here by evaluating to
@@ -459,7 +460,7 @@ the first character of the selector.
                        "[^[:space:]\n]"
                        (buffer-substring-no-properties (point)
                                                        (goto-opener) ) )
-                (signal 'not-selector-error (list (point))) )
+                (signal 'skewer-stylus-not-selector-error (list (point))) )
               
               (while
                   (not (= (point)
@@ -472,7 +473,7 @@ the first character of the selector.
     ((seq (and selector-start
                (pred (< (point))) ))
      ;; point was not inside a selector
-     (signal 'not-selector-error (list (point) selector-start)) )
+     (signal 'skewer-stylus-not-selector-error (list (point) selector-start)) )
     (range range) ) )
 
         
@@ -542,7 +543,7 @@ nearest applicable selector is located at each step."
                    (goto-char (car (skewer-stylus-rule-body-limits)))
                    (while (memql (char-before) '( ?\C-j ?\{ ?   ))
                      (backward-char) )
-                   (ignore-error not-selector-error
+                   (ignore-error skewer-stylus-not-selector-error
                      (skewer-stylus-selector-limits) ) ) ))
             (when this-range
               (goto-char (car this-range))
@@ -568,8 +569,7 @@ by one in the buffer, otherwise nil."
          (forward-char)
          (when (looking-back "\\(?:\n[[:space:]]*\\)?{" )
            (buffer-substring-no-properties (match-beginning 0)
-                                         (match-end 0) ) )
-         ) ) )
+                                         (match-end 0) ) ) ) ) )
    selector-ranges ) )
 
 (defun skewer-stylus-eval (string)
@@ -595,7 +595,7 @@ If the point isn't in a selector, it is not moved.
 
 Returns new point if point was moved, otherwise nil."
 
-  (ignore-error not-selector-error
+  (ignore-error skewer-stylus-not-selector-error
     (goto-char (cadr (skewer-stylus-selector-limits)))) )
 
 (defun skewer-stylus-send-rule-for-body-func (body-func)
@@ -686,6 +686,6 @@ that matches one of the regexps in
   :keymap skewer-stylus-mode-map
   :group 'skewer )
 
-(provide 'skewer-stylus-mode)
+(provide 'skewer-stylus)
 
 ;;; skewer-stylus.el ends here
