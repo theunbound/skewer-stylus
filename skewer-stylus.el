@@ -35,7 +35,7 @@
 ;; coding style of what you feed skewer-stylus, the more likely it is
 ;; to become confused. As always, there are no guarantees.
 
-;; As the license file point out...
+;; As the license file points out...
 
 ;;; Code:
 (require 'skewer-css)
@@ -579,7 +579,7 @@ temporary buffer, which is sent to skewer with
 ‘skewer-css-eval-buffer’."
 
   (let ((stylus-buffer (get-buffer-create "**Stylus**")))
-    (print (= 0 (call-process-region string nil "stylus" nil stylus-buffer)))
+    (call-process-region string nil "stylus" nil stylus-buffer)
     (with-current-buffer stylus-buffer
       (skewer-css-mode)
       (skewer-css-eval-buffer)
